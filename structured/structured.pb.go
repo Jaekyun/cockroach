@@ -9,11 +9,7 @@
 		cockroach/structured/structured.proto
 
 	It has these top-level messages:
-		Table
 		ColumnType
-		Column
-		Index
-		TableSchema
 		ColumnDescriptor
 		IndexDescriptor
 		TableDescriptor
@@ -104,22 +100,6 @@ func (x *ColumnType_Kind) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type Table struct {
-	Name             string `protobuf:"bytes,1,opt,name=name" json:"name"`
-	XXX_unrecognized []byte `json:"-"`
-}
-
-func (m *Table) Reset()         { *m = Table{} }
-func (m *Table) String() string { return proto.CompactTextString(m) }
-func (*Table) ProtoMessage()    {}
-
-func (m *Table) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
 type ColumnType struct {
 	Kind ColumnType_Kind `protobuf:"varint,1,opt,name=kind,enum=cockroach.structured.ColumnType_Kind" json:"kind"`
 	// BIT, INT, FLOAT, DECIMAL, CHAR and BINARY
@@ -163,117 +143,24 @@ func (m *ColumnType) GetVals() []string {
 	return nil
 }
 
-type Column struct {
-	Name             string     `protobuf:"bytes,1,opt,name=name" json:"name"`
-	Type             ColumnType `protobuf:"bytes,2,opt,name=type" json:"type"`
-	Nullable         bool       `protobuf:"varint,3,opt,name=nullable" json:"nullable"`
-	XXX_unrecognized []byte     `json:"-"`
-}
-
-func (m *Column) Reset()         { *m = Column{} }
-func (m *Column) String() string { return proto.CompactTextString(m) }
-func (*Column) ProtoMessage()    {}
-
-func (m *Column) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *Column) GetType() ColumnType {
-	if m != nil {
-		return m.Type
-	}
-	return ColumnType{}
-}
-
-func (m *Column) GetNullable() bool {
-	if m != nil {
-		return m.Nullable
-	}
-	return false
-}
-
-type Index struct {
-	Name             string `protobuf:"bytes,1,opt,name=name" json:"name"`
-	Unique           bool   `protobuf:"varint,2,opt,name=unique" json:"unique"`
-	XXX_unrecognized []byte `json:"-"`
-}
-
-func (m *Index) Reset()         { *m = Index{} }
-func (m *Index) String() string { return proto.CompactTextString(m) }
-func (*Index) ProtoMessage()    {}
-
-func (m *Index) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *Index) GetUnique() bool {
-	if m != nil {
-		return m.Unique
-	}
-	return false
-}
-
-type TableSchema struct {
-	Table   `protobuf:"bytes,1,opt,name=table,embedded=table" json:"table"`
-	Columns []Column `protobuf:"bytes,2,rep,name=columns" json:"columns"`
-	// An ordered list of indexes included in the table. The first index is the
-	// primary key; it is required.
-	Indexes          []TableSchema_IndexByName `protobuf:"bytes,3,rep,name=indexes" json:"indexes"`
-	XXX_unrecognized []byte                    `json:"-"`
-}
-
-func (m *TableSchema) Reset()         { *m = TableSchema{} }
-func (m *TableSchema) String() string { return proto.CompactTextString(m) }
-func (*TableSchema) ProtoMessage()    {}
-
-func (m *TableSchema) GetColumns() []Column {
-	if m != nil {
-		return m.Columns
-	}
-	return nil
-}
-
-func (m *TableSchema) GetIndexes() []TableSchema_IndexByName {
-	if m != nil {
-		return m.Indexes
-	}
-	return nil
-}
-
-type TableSchema_IndexByName struct {
-	Index `protobuf:"bytes,1,opt,name=index,embedded=index" json:"index"`
-	// An ordered list of column names of which the index is comprised. Each
-	// column_name refers to a column in the TableSchema's columns.
-	ColumnNames      []string `protobuf:"bytes,2,rep,name=column_names" json:"column_names,omitempty"`
-	XXX_unrecognized []byte   `json:"-"`
-}
-
-func (m *TableSchema_IndexByName) Reset()         { *m = TableSchema_IndexByName{} }
-func (m *TableSchema_IndexByName) String() string { return proto.CompactTextString(m) }
-func (*TableSchema_IndexByName) ProtoMessage()    {}
-
-func (m *TableSchema_IndexByName) GetColumnNames() []string {
-	if m != nil {
-		return m.ColumnNames
-	}
-	return nil
-}
-
 type ColumnDescriptor struct {
-	ID               uint32 `protobuf:"varint,1,opt,name=id" json:"id"`
-	Column           `protobuf:"bytes,2,opt,name=column,embedded=column" json:"column"`
-	XXX_unrecognized []byte `json:"-"`
+	Name             string     `protobuf:"bytes,1,opt,name=name" json:"name"`
+	ID               uint32     `protobuf:"varint,2,opt,name=id" json:"id"`
+	Type             ColumnType `protobuf:"bytes,3,opt,name=type" json:"type"`
+	Nullable         bool       `protobuf:"varint,4,opt,name=nullable" json:"nullable"`
+	XXX_unrecognized []byte     `json:"-"`
 }
 
 func (m *ColumnDescriptor) Reset()         { *m = ColumnDescriptor{} }
 func (m *ColumnDescriptor) String() string { return proto.CompactTextString(m) }
 func (*ColumnDescriptor) ProtoMessage()    {}
+
+func (m *ColumnDescriptor) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
 
 func (m *ColumnDescriptor) GetID() uint32 {
 	if m != nil {
@@ -282,13 +169,32 @@ func (m *ColumnDescriptor) GetID() uint32 {
 	return 0
 }
 
+func (m *ColumnDescriptor) GetType() ColumnType {
+	if m != nil {
+		return m.Type
+	}
+	return ColumnType{}
+}
+
+func (m *ColumnDescriptor) GetNullable() bool {
+	if m != nil {
+		return m.Nullable
+	}
+	return false
+}
+
 type IndexDescriptor struct {
-	ID    uint32 `protobuf:"varint,1,opt,name=id" json:"id"`
-	Index `protobuf:"bytes,2,opt,name=index,embedded=index" json:"index"`
-	// An ordered list of column ids of which the index is comprised. Each
-	// column_id refers to a column in the TableDescriptor's columns; special
-	// care is taken to update this when deleting columns.
-	ColumnIDs        []uint32 `protobuf:"varint,3,rep,name=column_ids" json:"column_ids,omitempty"`
+	Name   string `protobuf:"bytes,1,opt,name=name" json:"name"`
+	ID     uint32 `protobuf:"varint,2,opt,name=id" json:"id"`
+	Unique bool   `protobuf:"varint,3,opt,name=unique" json:"unique"`
+	// An ordered list of column names of which the index is comprised. This list
+	// parallels the column_ids list. If duplicating the storage of the column
+	// names here proves to be prohibitive, we could clear this field before
+	// saving and reconstruct it after loading.
+	ColumnNames []string `protobuf:"bytes,4,rep,name=column_names" json:"column_names,omitempty"`
+	// An ordered list of column ids of which the index is comprised. This list
+	// parallels the column_names list.
+	ColumnIDs        []uint32 `protobuf:"varint,5,rep,name=column_ids" json:"column_ids,omitempty"`
 	XXX_unrecognized []byte   `json:"-"`
 }
 
@@ -296,11 +202,32 @@ func (m *IndexDescriptor) Reset()         { *m = IndexDescriptor{} }
 func (m *IndexDescriptor) String() string { return proto.CompactTextString(m) }
 func (*IndexDescriptor) ProtoMessage()    {}
 
+func (m *IndexDescriptor) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
 func (m *IndexDescriptor) GetID() uint32 {
 	if m != nil {
 		return m.ID
 	}
 	return 0
+}
+
+func (m *IndexDescriptor) GetUnique() bool {
+	if m != nil {
+		return m.Unique
+	}
+	return false
+}
+
+func (m *IndexDescriptor) GetColumnNames() []string {
+	if m != nil {
+		return m.ColumnNames
+	}
+	return nil
 }
 
 func (m *IndexDescriptor) GetColumnIDs() []uint32 {
@@ -314,13 +241,13 @@ func (m *IndexDescriptor) GetColumnIDs() []uint32 {
 // key. The TableDescriptor has a globally-unique ID, while its member
 // {Column,Index}Descriptors have locally-unique IDs.
 type TableDescriptor struct {
-	ID      uint32 `protobuf:"varint,1,opt,name=id" json:"id"`
-	Table   `protobuf:"bytes,2,opt,name=table,embedded=table" json:"table"`
+	Name    string             `protobuf:"bytes,1,opt,name=name" json:"name"`
+	ID      uint32             `protobuf:"varint,2,opt,name=id" json:"id"`
 	Columns []ColumnDescriptor `protobuf:"bytes,3,rep,name=columns" json:"columns"`
-	// next_column_id is used to ensure that deleted column ids are not reused
+	// next_column_id is used to ensure that deleted column ids are not reused.
 	NextColumnID uint32            `protobuf:"varint,4,opt,name=next_column_id" json:"next_column_id"`
 	Indexes      []IndexDescriptor `protobuf:"bytes,5,rep,name=indexes" json:"indexes"`
-	// next_index_id is used to ensure that deleted index ids are not reused
+	// next_index_id is used to ensure that deleted index ids are not reused.
 	NextIndexID      uint32 `protobuf:"varint,6,opt,name=next_index_id" json:"next_index_id"`
 	XXX_unrecognized []byte `json:"-"`
 }
@@ -328,6 +255,13 @@ type TableDescriptor struct {
 func (m *TableDescriptor) Reset()         { *m = TableDescriptor{} }
 func (m *TableDescriptor) String() string { return proto.CompactTextString(m) }
 func (*TableDescriptor) ProtoMessage()    {}
+
+func (m *TableDescriptor) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
 
 func (m *TableDescriptor) GetID() uint32 {
 	if m != nil {
@@ -366,71 +300,6 @@ func (m *TableDescriptor) GetNextIndexID() uint32 {
 
 func init() {
 	proto.RegisterEnum("cockroach.structured.ColumnType_Kind", ColumnType_Kind_name, ColumnType_Kind_value)
-}
-func (m *Table) Unmarshal(data []byte) error {
-	l := len(data)
-	index := 0
-	for index < l {
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if index >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := data[index]
-			index++
-			wire |= (uint64(b) & 0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			postIndex := index + int(stringLen)
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Name = string(data[index:postIndex])
-			index = postIndex
-		default:
-			var sizeOfWire int
-			for {
-				sizeOfWire++
-				wire >>= 7
-				if wire == 0 {
-					break
-				}
-			}
-			index -= sizeOfWire
-			skippy, err := github_com_gogo_protobuf_proto.Skip(data[index:])
-			if err != nil {
-				return err
-			}
-			if (index + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, data[index:index+skippy]...)
-			index += skippy
-		}
-	}
-
-	return nil
 }
 func (m *ColumnType) Unmarshal(data []byte) error {
 	l := len(data)
@@ -542,7 +411,7 @@ func (m *ColumnType) Unmarshal(data []byte) error {
 
 	return nil
 }
-func (m *Column) Unmarshal(data []byte) error {
+func (m *ColumnDescriptor) Unmarshal(data []byte) error {
 	l := len(data)
 	index := 0
 	for index < l {
@@ -584,6 +453,21 @@ func (m *Column) Unmarshal(data []byte) error {
 			m.Name = string(data[index:postIndex])
 			index = postIndex
 		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ID", wireType)
+			}
+			for shift := uint(0); ; shift += 7 {
+				if index >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[index]
+				index++
+				m.ID |= (uint32(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
 			}
@@ -607,7 +491,7 @@ func (m *Column) Unmarshal(data []byte) error {
 				return err
 			}
 			index = postIndex
-		case 3:
+		case 4:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Nullable", wireType)
 			}
@@ -624,376 +508,6 @@ func (m *Column) Unmarshal(data []byte) error {
 				}
 			}
 			m.Nullable = bool(v != 0)
-		default:
-			var sizeOfWire int
-			for {
-				sizeOfWire++
-				wire >>= 7
-				if wire == 0 {
-					break
-				}
-			}
-			index -= sizeOfWire
-			skippy, err := github_com_gogo_protobuf_proto.Skip(data[index:])
-			if err != nil {
-				return err
-			}
-			if (index + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, data[index:index+skippy]...)
-			index += skippy
-		}
-	}
-
-	return nil
-}
-func (m *Index) Unmarshal(data []byte) error {
-	l := len(data)
-	index := 0
-	for index < l {
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if index >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := data[index]
-			index++
-			wire |= (uint64(b) & 0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			postIndex := index + int(stringLen)
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Name = string(data[index:postIndex])
-			index = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Unique", wireType)
-			}
-			var v int
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				v |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			m.Unique = bool(v != 0)
-		default:
-			var sizeOfWire int
-			for {
-				sizeOfWire++
-				wire >>= 7
-				if wire == 0 {
-					break
-				}
-			}
-			index -= sizeOfWire
-			skippy, err := github_com_gogo_protobuf_proto.Skip(data[index:])
-			if err != nil {
-				return err
-			}
-			if (index + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, data[index:index+skippy]...)
-			index += skippy
-		}
-	}
-
-	return nil
-}
-func (m *TableSchema) Unmarshal(data []byte) error {
-	l := len(data)
-	index := 0
-	for index < l {
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if index >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := data[index]
-			index++
-			wire |= (uint64(b) & 0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Table", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				msglen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			postIndex := index + msglen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Table.Unmarshal(data[index:postIndex]); err != nil {
-				return err
-			}
-			index = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Columns", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				msglen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			postIndex := index + msglen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Columns = append(m.Columns, Column{})
-			if err := m.Columns[len(m.Columns)-1].Unmarshal(data[index:postIndex]); err != nil {
-				return err
-			}
-			index = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Indexes", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				msglen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			postIndex := index + msglen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Indexes = append(m.Indexes, TableSchema_IndexByName{})
-			if err := m.Indexes[len(m.Indexes)-1].Unmarshal(data[index:postIndex]); err != nil {
-				return err
-			}
-			index = postIndex
-		default:
-			var sizeOfWire int
-			for {
-				sizeOfWire++
-				wire >>= 7
-				if wire == 0 {
-					break
-				}
-			}
-			index -= sizeOfWire
-			skippy, err := github_com_gogo_protobuf_proto.Skip(data[index:])
-			if err != nil {
-				return err
-			}
-			if (index + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, data[index:index+skippy]...)
-			index += skippy
-		}
-	}
-
-	return nil
-}
-func (m *TableSchema_IndexByName) Unmarshal(data []byte) error {
-	l := len(data)
-	index := 0
-	for index < l {
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if index >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := data[index]
-			index++
-			wire |= (uint64(b) & 0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Index", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				msglen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			postIndex := index + msglen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Index.Unmarshal(data[index:postIndex]); err != nil {
-				return err
-			}
-			index = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ColumnNames", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			postIndex := index + int(stringLen)
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ColumnNames = append(m.ColumnNames, string(data[index:postIndex]))
-			index = postIndex
-		default:
-			var sizeOfWire int
-			for {
-				sizeOfWire++
-				wire >>= 7
-				if wire == 0 {
-					break
-				}
-			}
-			index -= sizeOfWire
-			skippy, err := github_com_gogo_protobuf_proto.Skip(data[index:])
-			if err != nil {
-				return err
-			}
-			if (index + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, data[index:index+skippy]...)
-			index += skippy
-		}
-	}
-
-	return nil
-}
-func (m *ColumnDescriptor) Unmarshal(data []byte) error {
-	l := len(data)
-	index := 0
-	for index < l {
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if index >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := data[index]
-			index++
-			wire |= (uint64(b) & 0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ID", wireType)
-			}
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				m.ID |= (uint32(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Column", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				msglen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			postIndex := index + msglen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Column.Unmarshal(data[index:postIndex]); err != nil {
-				return err
-			}
-			index = postIndex
 		default:
 			var sizeOfWire int
 			for {
@@ -1038,6 +552,28 @@ func (m *IndexDescriptor) Unmarshal(data []byte) error {
 		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if index >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[index]
+				index++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			postIndex := index + int(stringLen)
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Name = string(data[index:postIndex])
+			index = postIndex
+		case 2:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ID", wireType)
 			}
@@ -1052,31 +588,46 @@ func (m *IndexDescriptor) Unmarshal(data []byte) error {
 					break
 				}
 			}
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Index", wireType)
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Unique", wireType)
 			}
-			var msglen int
+			var v int
 			for shift := uint(0); ; shift += 7 {
 				if index >= l {
 					return io.ErrUnexpectedEOF
 				}
 				b := data[index]
 				index++
-				msglen |= (int(b) & 0x7F) << shift
+				v |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			postIndex := index + msglen
+			m.Unique = bool(v != 0)
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ColumnNames", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if index >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[index]
+				index++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			postIndex := index + int(stringLen)
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Index.Unmarshal(data[index:postIndex]); err != nil {
-				return err
-			}
+			m.ColumnNames = append(m.ColumnNames, string(data[index:postIndex]))
 			index = postIndex
-		case 3:
+		case 5:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ColumnIDs", wireType)
 			}
@@ -1137,6 +688,28 @@ func (m *TableDescriptor) Unmarshal(data []byte) error {
 		wireType := int(wire & 0x7)
 		switch fieldNum {
 		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if index >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[index]
+				index++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			postIndex := index + int(stringLen)
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Name = string(data[index:postIndex])
+			index = postIndex
+		case 2:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ID", wireType)
 			}
@@ -1151,30 +724,6 @@ func (m *TableDescriptor) Unmarshal(data []byte) error {
 					break
 				}
 			}
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Table", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if index >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[index]
-				index++
-				msglen |= (int(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			postIndex := index + msglen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Table.Unmarshal(data[index:postIndex]); err != nil {
-				return err
-			}
-			index = postIndex
 		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Columns", wireType)
@@ -1279,17 +828,6 @@ func (m *TableDescriptor) Unmarshal(data []byte) error {
 
 	return nil
 }
-func (m *Table) Size() (n int) {
-	var l int
-	_ = l
-	l = len(m.Name)
-	n += 1 + l + sovStructured(uint64(l))
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
 func (m *ColumnType) Size() (n int) {
 	var l int
 	_ = l
@@ -1308,11 +846,12 @@ func (m *ColumnType) Size() (n int) {
 	return n
 }
 
-func (m *Column) Size() (n int) {
+func (m *ColumnDescriptor) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.Name)
 	n += 1 + l + sovStructured(uint64(l))
+	n += 1 + sovStructured(uint64(m.ID))
 	l = m.Type.Size()
 	n += 1 + l + sovStructured(uint64(l))
 	n += 2
@@ -1322,76 +861,19 @@ func (m *Column) Size() (n int) {
 	return n
 }
 
-func (m *Index) Size() (n int) {
+func (m *IndexDescriptor) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.Name)
 	n += 1 + l + sovStructured(uint64(l))
+	n += 1 + sovStructured(uint64(m.ID))
 	n += 2
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *TableSchema) Size() (n int) {
-	var l int
-	_ = l
-	l = m.Table.Size()
-	n += 1 + l + sovStructured(uint64(l))
-	if len(m.Columns) > 0 {
-		for _, e := range m.Columns {
-			l = e.Size()
-			n += 1 + l + sovStructured(uint64(l))
-		}
-	}
-	if len(m.Indexes) > 0 {
-		for _, e := range m.Indexes {
-			l = e.Size()
-			n += 1 + l + sovStructured(uint64(l))
-		}
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *TableSchema_IndexByName) Size() (n int) {
-	var l int
-	_ = l
-	l = m.Index.Size()
-	n += 1 + l + sovStructured(uint64(l))
 	if len(m.ColumnNames) > 0 {
 		for _, s := range m.ColumnNames {
 			l = len(s)
 			n += 1 + l + sovStructured(uint64(l))
 		}
 	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *ColumnDescriptor) Size() (n int) {
-	var l int
-	_ = l
-	n += 1 + sovStructured(uint64(m.ID))
-	l = m.Column.Size()
-	n += 1 + l + sovStructured(uint64(l))
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *IndexDescriptor) Size() (n int) {
-	var l int
-	_ = l
-	n += 1 + sovStructured(uint64(m.ID))
-	l = m.Index.Size()
-	n += 1 + l + sovStructured(uint64(l))
 	if len(m.ColumnIDs) > 0 {
 		for _, e := range m.ColumnIDs {
 			n += 1 + sovStructured(uint64(e))
@@ -1406,9 +888,9 @@ func (m *IndexDescriptor) Size() (n int) {
 func (m *TableDescriptor) Size() (n int) {
 	var l int
 	_ = l
-	n += 1 + sovStructured(uint64(m.ID))
-	l = m.Table.Size()
+	l = len(m.Name)
 	n += 1 + l + sovStructured(uint64(l))
+	n += 1 + sovStructured(uint64(m.ID))
 	if len(m.Columns) > 0 {
 		for _, e := range m.Columns {
 			l = e.Size()
@@ -1442,31 +924,6 @@ func sovStructured(x uint64) (n int) {
 func sozStructured(x uint64) (n int) {
 	return sovStructured(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *Table) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *Table) MarshalTo(data []byte) (n int, err error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	data[i] = 0xa
-	i++
-	i = encodeVarintStructured(data, i, uint64(len(m.Name)))
-	i += copy(data[i:], m.Name)
-	if m.XXX_unrecognized != nil {
-		i += copy(data[i:], m.XXX_unrecognized)
-	}
-	return i, nil
-}
-
 func (m *ColumnType) Marshal() (data []byte, err error) {
 	size := m.Size()
 	data = make([]byte, size)
@@ -1512,177 +969,6 @@ func (m *ColumnType) MarshalTo(data []byte) (n int, err error) {
 	return i, nil
 }
 
-func (m *Column) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *Column) MarshalTo(data []byte) (n int, err error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	data[i] = 0xa
-	i++
-	i = encodeVarintStructured(data, i, uint64(len(m.Name)))
-	i += copy(data[i:], m.Name)
-	data[i] = 0x12
-	i++
-	i = encodeVarintStructured(data, i, uint64(m.Type.Size()))
-	n1, err := m.Type.MarshalTo(data[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n1
-	data[i] = 0x18
-	i++
-	if m.Nullable {
-		data[i] = 1
-	} else {
-		data[i] = 0
-	}
-	i++
-	if m.XXX_unrecognized != nil {
-		i += copy(data[i:], m.XXX_unrecognized)
-	}
-	return i, nil
-}
-
-func (m *Index) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *Index) MarshalTo(data []byte) (n int, err error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	data[i] = 0xa
-	i++
-	i = encodeVarintStructured(data, i, uint64(len(m.Name)))
-	i += copy(data[i:], m.Name)
-	data[i] = 0x10
-	i++
-	if m.Unique {
-		data[i] = 1
-	} else {
-		data[i] = 0
-	}
-	i++
-	if m.XXX_unrecognized != nil {
-		i += copy(data[i:], m.XXX_unrecognized)
-	}
-	return i, nil
-}
-
-func (m *TableSchema) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *TableSchema) MarshalTo(data []byte) (n int, err error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	data[i] = 0xa
-	i++
-	i = encodeVarintStructured(data, i, uint64(m.Table.Size()))
-	n2, err := m.Table.MarshalTo(data[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n2
-	if len(m.Columns) > 0 {
-		for _, msg := range m.Columns {
-			data[i] = 0x12
-			i++
-			i = encodeVarintStructured(data, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(data[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
-	if len(m.Indexes) > 0 {
-		for _, msg := range m.Indexes {
-			data[i] = 0x1a
-			i++
-			i = encodeVarintStructured(data, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(data[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
-	if m.XXX_unrecognized != nil {
-		i += copy(data[i:], m.XXX_unrecognized)
-	}
-	return i, nil
-}
-
-func (m *TableSchema_IndexByName) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *TableSchema_IndexByName) MarshalTo(data []byte) (n int, err error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	data[i] = 0xa
-	i++
-	i = encodeVarintStructured(data, i, uint64(m.Index.Size()))
-	n3, err := m.Index.MarshalTo(data[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n3
-	if len(m.ColumnNames) > 0 {
-		for _, s := range m.ColumnNames {
-			data[i] = 0x12
-			i++
-			l = len(s)
-			for l >= 1<<7 {
-				data[i] = uint8(uint64(l)&0x7f | 0x80)
-				l >>= 7
-				i++
-			}
-			data[i] = uint8(l)
-			i++
-			i += copy(data[i:], s)
-		}
-	}
-	if m.XXX_unrecognized != nil {
-		i += copy(data[i:], m.XXX_unrecognized)
-	}
-	return i, nil
-}
-
 func (m *ColumnDescriptor) Marshal() (data []byte, err error) {
 	size := m.Size()
 	data = make([]byte, size)
@@ -1698,17 +984,29 @@ func (m *ColumnDescriptor) MarshalTo(data []byte) (n int, err error) {
 	_ = i
 	var l int
 	_ = l
-	data[i] = 0x8
+	data[i] = 0xa
+	i++
+	i = encodeVarintStructured(data, i, uint64(len(m.Name)))
+	i += copy(data[i:], m.Name)
+	data[i] = 0x10
 	i++
 	i = encodeVarintStructured(data, i, uint64(m.ID))
-	data[i] = 0x12
+	data[i] = 0x1a
 	i++
-	i = encodeVarintStructured(data, i, uint64(m.Column.Size()))
-	n4, err := m.Column.MarshalTo(data[i:])
+	i = encodeVarintStructured(data, i, uint64(m.Type.Size()))
+	n1, err := m.Type.MarshalTo(data[i:])
 	if err != nil {
 		return 0, err
 	}
-	i += n4
+	i += n1
+	data[i] = 0x20
+	i++
+	if m.Nullable {
+		data[i] = 1
+	} else {
+		data[i] = 0
+	}
+	i++
 	if m.XXX_unrecognized != nil {
 		i += copy(data[i:], m.XXX_unrecognized)
 	}
@@ -1730,20 +1028,39 @@ func (m *IndexDescriptor) MarshalTo(data []byte) (n int, err error) {
 	_ = i
 	var l int
 	_ = l
-	data[i] = 0x8
+	data[i] = 0xa
+	i++
+	i = encodeVarintStructured(data, i, uint64(len(m.Name)))
+	i += copy(data[i:], m.Name)
+	data[i] = 0x10
 	i++
 	i = encodeVarintStructured(data, i, uint64(m.ID))
-	data[i] = 0x12
+	data[i] = 0x18
 	i++
-	i = encodeVarintStructured(data, i, uint64(m.Index.Size()))
-	n5, err := m.Index.MarshalTo(data[i:])
-	if err != nil {
-		return 0, err
+	if m.Unique {
+		data[i] = 1
+	} else {
+		data[i] = 0
 	}
-	i += n5
+	i++
+	if len(m.ColumnNames) > 0 {
+		for _, s := range m.ColumnNames {
+			data[i] = 0x22
+			i++
+			l = len(s)
+			for l >= 1<<7 {
+				data[i] = uint8(uint64(l)&0x7f | 0x80)
+				l >>= 7
+				i++
+			}
+			data[i] = uint8(l)
+			i++
+			i += copy(data[i:], s)
+		}
+	}
 	if len(m.ColumnIDs) > 0 {
 		for _, num := range m.ColumnIDs {
-			data[i] = 0x18
+			data[i] = 0x28
 			i++
 			i = encodeVarintStructured(data, i, uint64(num))
 		}
@@ -1769,17 +1086,13 @@ func (m *TableDescriptor) MarshalTo(data []byte) (n int, err error) {
 	_ = i
 	var l int
 	_ = l
-	data[i] = 0x8
+	data[i] = 0xa
+	i++
+	i = encodeVarintStructured(data, i, uint64(len(m.Name)))
+	i += copy(data[i:], m.Name)
+	data[i] = 0x10
 	i++
 	i = encodeVarintStructured(data, i, uint64(m.ID))
-	data[i] = 0x12
-	i++
-	i = encodeVarintStructured(data, i, uint64(m.Table.Size()))
-	n6, err := m.Table.MarshalTo(data[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n6
 	if len(m.Columns) > 0 {
 		for _, msg := range m.Columns {
 			data[i] = 0x1a
